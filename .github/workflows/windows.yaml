@@ -51,6 +51,16 @@ jobs:
         run: |
           rmdir third_party\qt_src /s /q
 
+      - name: Build and merge mozc-ut dictionary
+        shell: bash
+        run: |
+          python3 -m pip install jaconv
+          git clone --depth 1 https://github.com/utuhiro78/merge-ut-dictionaries.git /tmp/mozcdic
+          cd /tmp/mozcdic/src/merge
+          bash make.sh
+          cat mozcdic-ut.txt >> $GITHUB_WORKSPACE/src/data/dictionary_oss/dictionary00.txt
+          echo "mozc-ut dictionary merged: $(wc -l < mozcdic-ut.txt) lines"
+
       - name: build artifacts
         shell: cmd
         working-directory: .\src
