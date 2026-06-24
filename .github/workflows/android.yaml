@@ -81,3 +81,20 @@ jobs:
         working-directory: ./src
         run: |
           bazelisk build --config oss_android package --config release_build
+
+      - name: Sign APK
+        if: env.ANDROID_KEYSTORE_BASE64 != ''
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/mozc-release.keystore
+          $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools | tail -1)/apksigner sign \
+            --ks /tmp/mozc-release.keystore \
+            --ks-pass pass:$ANDROID_KEYSTORE_PASSWORD \
+            --ks-key-alias $ANDROID_KEY_ALIAS \
+            --key-pass pass:$ANDROID_KEY_PASSWORD \
+            --out mozc-signed.apk \
+            bazel-bin/app/src/main/mozc.apk
