@@ -53,6 +53,9 @@ jobs:
           path: src/bazel-bin/android/jni/native_libs.zip
           if-no-files-found: warn
 
+      - name: Find APK
+        run: find . -name "*.apk" 2>/dev/null
+
       - name: Sign APK
         if: env.ANDROID_KEYSTORE_BASE64 != ''
         env:
@@ -98,6 +101,9 @@ jobs:
         working-directory: ./src
         run: |
           bazelisk build --config oss_android package --config release_build
+
+      - name: Find APK
+        run: find . -name "*.apk" 2>/dev/null
 
       - name: Sign APK
         if: env.ANDROID_KEYSTORE_BASE64 != ''
