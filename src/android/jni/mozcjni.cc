@@ -46,6 +46,7 @@
 #include "absl/strings/string_view.h"
 #include "base/system_util.h"
 #include "base/util.h"
+#include "base/version.h"
 #include "data_manager/data_manager.h"
 #include "engine/engine.h"
 #include "protocol/commands.pb.h"
@@ -175,33 +176,55 @@ jstring JNICALL getDataVersion(JNIEnv* env) {
   return env->NewStringUTF(version.c_str());
 }
 
+jstring JNICALL getVersion(JNIEnv* env) {
+  return env->NewStringUTF(Version::GetMozcVersion().c_str());
+}
+
+void JNICALL suppressSendingStats(JNIEnv* env, jclass clazz,
+                                  jboolean suppress) {
+  // Usage stats uploader was removed from mozc. Keep as no-op for
+  // MozcForAndroid JNI compatibility.
+}
+
 }  // namespace
+
+void ResetSessionHandler() { g_session_handler.reset(); }
+
 }  // namespace jni
 }  // namespace mozc
 
 extern "C" {
 
-JNIEXPORT jboolean JNICALL
-Java_com_google_android_apps_inputmethod_libs_mozc_session_MozcJNI_initialize(
-    JNIEnv* env, jclass clazz) {
-  if (!env) {
-    // Fatal error. No way to recover.
-    return false;
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
+  JNIEnv* env = nullptr;
+  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+    return JNI_ERR;
   }
   const JNINativeMethod methods[] = {
       {"evalCommand", "([B)[B",
        reinterpret_cast<void*>(&mozc::jni::evalCommand)},
       {"onPostLoad", "(Ljava/lang/String;Ljava/lang/String;)Z",
        reinterpret_cast<void*>(&mozc::jni::onPostLoad)},
+      {"getVersion", "()Ljava/lang/String;",
+       reinterpret_cast<void*>(&mozc::jni::getVersion)},
       {"getDataVersion", "()Ljava/lang/String;",
        reinterpret_cast<void*>(&mozc::jni::getDataVersion)},
+      {"suppressSendingStats", "(Z)V",
+       reinterpret_cast<void*>(&mozc::jni::suppressSendingStats)},
   };
-  if (env->RegisterNatives(clazz, methods, std::size(methods))) {
-    // Fatal error. No way to recover.
-    return false;
+  jclass clazz = env->FindClass(
+      "org/mozc/android/inputmethod/japanese/session/MozcJNI");
+  if (clazz == nullptr) {
+    return JNI_ERR;
   }
+  if (env->RegisterNatives(clazz, methods, std::size(methods)) != 0) {
+    return JNI_ERR;
+  }
+  return JNI_VERSION_1_6;
+}
 
-  return true;
+JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved) {
+  mozc::jni::ResetSessionHandler();
 }
 
 }  // extern "C"

@@ -53,6 +53,7 @@ mozc_cc_library(
     deps = [
         "//base:system_util",
         "//base:util",
+        "//base:version",
         "//data_manager",
         "//engine",
         "//protocol:commands_cc_proto",
