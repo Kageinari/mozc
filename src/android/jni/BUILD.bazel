@@ -154,14 +154,14 @@ mozc_py_binary(
 )
 
 genrule(
-    name = "native_libs_so",
+    name = "native_libs",
     srcs = [
         ":mozc.arm64",
         ":mozc.arm32",
         ":mozc.x86_64",
         ":mozc.x86_32",
     ],
-    outs = ["native_libs_so.zip"],
+    outs = ["native_libs.zip"],
     cmd = " ".join([
         "$(location :make_archive)",
         "--arm64=$(location :mozc.arm64)",
@@ -172,27 +172,5 @@ genrule(
     ]),
     tags = MOZC_TAGS.ANDROID_ONLY,
     tools = [":make_archive"],
-    visibility = ["//visibility:private"],
-)
-
-mozc_py_binary(
-    name = "add_mozc_data",
-    srcs = ["add_mozc_data.py"],
-)
-
-genrule(
-    name = "native_libs",
-    srcs = [
-        ":native_libs_so",
-        "//data_manager/oss:mozc.data",
-    ],
-    outs = ["native_libs.zip"],
-    cmd = " ".join([
-        "$(location :add_mozc_data)",
-        "--input=$(location :native_libs_so)",
-        "--mozc_data=$(location //data_manager/oss:mozc.data)",
-        "--output $@",
-    ]),
-    tools = [":add_mozc_data"],
     visibility = ["//:__subpackages__"],
 )
