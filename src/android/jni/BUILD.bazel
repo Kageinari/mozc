@@ -160,6 +160,7 @@ genrule(
         ":mozc.arm32",
         ":mozc.x86_64",
         ":mozc.x86_32",
+        "//data_manager/oss:mozc.data",
     ],
     outs = ["native_libs.zip"],
     cmd = " ".join([
@@ -168,6 +169,7 @@ genrule(
         "--arm32=$(location :mozc.arm32)",
         "--x86_64=$(location :mozc.x86_64)",
         "--x86_32=$(location :mozc.x86_32)",
+        "--mozc_data=$(location //data_manager/oss:mozc.data)",
         "--output $@",
     ]),
     tags = MOZC_TAGS.ANDROID_ONLY,
