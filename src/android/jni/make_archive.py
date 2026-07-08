@@ -42,6 +42,8 @@ def main():
   parser.add_argument('--arm32', type=str)
   parser.add_argument('--x86_32', type=str)
   parser.add_argument('--x86_64', type=str)
+  parser.add_argument('--mozc_data', help='Path to mozc.data dictionary file',
+                      type=str)
   parser.add_argument('--output', help='A path to output ZIP file', type=str)
   args = parser.parse_args()
 
@@ -60,6 +62,10 @@ def main():
       dest_dir = root.joinpath('libs').joinpath(arch)
       dest_dir.mkdir(parents=True, exist_ok=True)
       shutil.copy(src, dest_dir.joinpath('libmozc.so'))
+    if args.mozc_data:
+      data_dir = root.joinpath('data')
+      data_dir.mkdir(parents=True, exist_ok=True)
+      shutil.copy(pathlib.Path(args.mozc_data), data_dir.joinpath('mozc.data'))
     shutil.make_archive(
         str(output.with_suffix('')), format='zip', root_dir=tmp_dir
     )

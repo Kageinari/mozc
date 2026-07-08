@@ -48,9 +48,6 @@
 #include "base/util.h"
 #include "base/version.h"
 #include "data_manager/data_manager.h"
-#if defined(MOZC_USE_CUSTOM_DATA_MANAGER)
-#include "data_manager/oss/oss_data_manager.h"
-#endif
 #include "engine/engine.h"
 #include "protocol/commands.pb.h"
 #include "session/session_handler.h"
@@ -125,18 +122,6 @@ std::unique_ptr<EngineInterface> CreateMobileEngine(
   return *std::move(engine);
 }
 
-std::unique_ptr<EngineInterface> CreateEngineWithDataManager(
-    std::unique_ptr<const DataManager> data_manager) {
-  absl::StatusOr<std::unique_ptr<Engine>> engine =
-      Engine::CreateEngine(std::move(data_manager));
-  if (!engine.ok()) {
-    LOG(ERROR) << "Failed to create engine from data manager: "
-               << engine.status() << ": Fallback to minimal engine";
-    return Engine::CreateEngine();
-  }
-  return *std::move(engine);
-}
-
 std::unique_ptr<SessionHandler> CreateSessionHandler(JNIEnv* env,
                                                      jstring j_data_file_path) {
   if (env == nullptr) {
@@ -144,17 +129,6 @@ std::unique_ptr<SessionHandler> CreateSessionHandler(JNIEnv* env,
     return nullptr;
   }
   std::unique_ptr<EngineInterface> engine;
-#if defined(MOZC_USE_CUSTOM_DATA_MANAGER)
-  if (j_data_file_path == nullptr) {
-    LOG(INFO) << "Using embedded OSS dictionary data.";
-    engine = CreateEngineWithDataManager(
-        std::make_unique<const oss::OssDataManager>());
-  } else {
-    const std::string& data_file_path =
-        JstringToCcString(env, j_data_file_path);
-    engine = CreateMobileEngine(data_file_path);
-  }
-#else
   if (j_data_file_path == nullptr) {
     LOG(ERROR) << "j_data_file_path is null.  Fallback to minimal engine.";
     engine = Engine::CreateEngine();
@@ -163,7 +137,6 @@ std::unique_ptr<SessionHandler> CreateSessionHandler(JNIEnv* env,
         JstringToCcString(env, j_data_file_path);
     engine = CreateMobileEngine(data_file_path);
   }
-#endif
   DCHECK(engine);
   return std::make_unique<SessionHandler>(std::move(engine));
 }

@@ -47,10 +47,6 @@ mozc_cc_library(
     linkopts = mozc_select(
         android = ["-llog"],
     ),
-    local_defines = mozc_select(
-        oss_android = ["MOZC_USE_CUSTOM_DATA_MANAGER"],
-        default = [],
-    ),
     tags = MOZC_TAGS.ANDROID_ONLY,
     # Scheuklappen: keep
     visibility = ["//visibility:private"],
@@ -67,10 +63,7 @@ mozc_cc_library(
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-    ] + mozc_select(
-        oss_android = ["//data_manager/oss:oss_data_manager"],
-        default = [],
-    ),
+    ],
     alwayslink = 1,
 )
 
