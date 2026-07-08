@@ -46,9 +46,11 @@ jobs:
         working-directory: ./src
         run: |
           bazelisk build --config oss_android package --config release_build
+          cp bazel-bin/android/jni/native_libs.zip /tmp/native_libs_so.zip
           bazelisk build --config oss_linux //data_manager/oss:mozc.data
+          mkdir -p bazel-bin/android/jni
           python3 android/jni/add_mozc_data.py \
-            --input bazel-bin/android/jni/native_libs.zip \
+            --input /tmp/native_libs_so.zip \
             --mozc_data bazel-bin/data_manager/oss/mozc.data \
             --output bazel-bin/android/jni/native_libs.zip
 
@@ -87,9 +89,11 @@ jobs:
         working-directory: ./src
         run: |
           bazelisk build --config oss_android package --config release_build
+          cp bazel-bin/android/jni/native_libs.zip /tmp/native_libs_so.zip
           bazelisk build --config oss_macos //data_manager/oss:mozc.data
+          mkdir -p bazel-bin/android/jni
           python3 android/jni/add_mozc_data.py \
-            --input bazel-bin/android/jni/native_libs.zip \
+            --input /tmp/native_libs_so.zip \
             --mozc_data bazel-bin/data_manager/oss/mozc.data \
             --output bazel-bin/android/jni/native_libs.zip
 
